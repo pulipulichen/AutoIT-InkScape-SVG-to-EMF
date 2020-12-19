@@ -31,21 +31,40 @@ Func GetFileNameNoExt($sFilePath)
  Return $FileName
 EndFunc
 
+Func GetDir($sFilePath)
+    If Not IsString($sFilePath) Then
+        Return SetError(1, 0, -1)
+    EndIf
+
+    Local $FileDir = StringRegExpReplace($sFilePath, "\\[^\\]*$", "")
+
+    Return $FileDir
+EndFunc
+
+
 For $i = 1 To $CmdLine[0]
    Local $filePath = $CmdLine[$i]
    If FileExists ($filePath) == 1 Then
 
+    FileChangeDir ( GetDir($filePath) )
+
     ;; ..\inkscape.exe --file in.svg --export-emf out.emf
     ;Local $cmd = $inkscape_path & "--file in.svg --export-emf out.emf"
-    Local $svgFilename = GetFileNameNoExt($filePath) & ".svg"
+	Local $tmpPDFFilename = GetDir($filePath) & "\tmp.pdf"
+	FileCopy($filePath, $tmpPDFFilename)
+
+    Local $svgFilename = GetFileNameNoExt($tmpPDFFilename) & ".svg"
 	Local $cmd = $pdftocairo_path & ' -svg "' & $filePath & '" "' & $svgFilename & '"'
 
 	;MsgBox($MB_SYSTEMMODAL, "", $cmd)
 	RunWait($cmd, '', @SW_MINIMIZE)
 
-	Local $cmdSvg2Emf = $svg2emf_path & ' "' & StripExt($filePath) & ".svg" & '"'
+	Local $cmdSvg2Emf = $svg2emf_path & ' "' & StripExt($tmpPDFFilename) & ".svg" & '"'
+	;MsgBox($MB_SYSTEMMODAL, "", $cmdSvg2Emf)
 	RunWait($cmdSvg2Emf, '', @SW_MINIMIZE)
 
-	FileDelete(StripExt($filePath) & ".svg")
+	FileDelete(StripExt($tmpPDFFilename) & ".svg")
+	FileDelete($tmpPDFFilename)
+	FileMove(GetFileNameNoExt($tmpPDFFilename) & ".emf", GetFileNameNoExt($filePath) & ".emf")
    EndIf
 Next
