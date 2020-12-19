@@ -39,7 +39,7 @@ For $i = 1 To $CmdLine[0]
     Local $emfPath = StripExt($filePath) & ".emf"
 	Local $cmd = $inkscape_path & ' --file "' & $filePath & '" --export-emf "' & $emfPath & '"'
 
-	MsgBox($MB_SYSTEMMODAL, "", $cmd)
+	;MsgBox($MB_SYSTEMMODAL, "", $cmd)
 	RunWait($cmd, '', @SW_MINIMIZE)
    EndIf
 Next
