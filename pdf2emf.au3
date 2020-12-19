@@ -53,11 +53,17 @@ For $i = 1 To $CmdLine[0]
 	Local $tmpPDFFilename = GetDir($filePath) & "\tmp.pdf"
 	FileCopy($filePath, $tmpPDFFilename)
 
+    Local $finalEmfPath = GetFileNameNoExt($filePath) & ".emf"
+    FileDelete($finalEmfPath)
+
     Local $svgFilename = GetFileNameNoExt($tmpPDFFilename) & ".svg"
-	Local $cmd = $pdftocairo_path & ' -svg "' & $filePath & '" "' & $svgFilename & '"'
+ 	Local $cmd = $pdftocairo_path & ' -f 1 -l 1 -svg "' & $filePath & '" "' & $svgFilename & '"'
 
 	;MsgBox($MB_SYSTEMMODAL, "", $cmd)
+	;Exit
 	RunWait($cmd, '', @SW_MINIMIZE)
+
+    FileDelete(GetFileNameNoExt($tmpPDFFilename) & ".emf")
 
 	Local $cmdSvg2Emf = $svg2emf_path & ' "' & StripExt($tmpPDFFilename) & ".svg" & '"'
 	;MsgBox($MB_SYSTEMMODAL, "", $cmdSvg2Emf)
@@ -65,6 +71,13 @@ For $i = 1 To $CmdLine[0]
 
 	FileDelete(StripExt($tmpPDFFilename) & ".svg")
 	FileDelete($tmpPDFFilename)
+
 	FileMove(GetFileNameNoExt($tmpPDFFilename) & ".emf", GetFileNameNoExt($filePath) & ".emf")
+
+
+	Local $cmdOpenEmf = $inkscape_path & ' "' & GetFileNameNoExt($filePath) & ".emf" & '"'
+	;MsgBox($MB_SYSTEMMODAL, "", $cmdSvg2Emf)
+	Run($cmdOpenEmf, '', @SW_MINIMIZE)
+	;ShellExecute($inkscape_path,
    EndIf
 Next
